@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    
+    <!-- PWA Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#16A34A">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/app-icon.png">
+    
+    <title>Vibex Notes</title>
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CDN and Config -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              // Map Tailwind colors to our CSS variables
+              bg: {
+                primary: 'var(--color-bg-primary)',
+                secondary: 'var(--color-bg-secondary)',
+                tertiary: 'var(--color-bg-tertiary)',
+                elevated: 'var(--color-bg-elevated)',
+              },
+              text: {
+                primary: 'var(--color-text-primary)',
+                secondary: 'var(--color-text-secondary)',
+                tertiary: 'var(--color-text-tertiary)',
+              },
+              accent: {
+                primary: 'var(--color-accent-primary)',
+                'primary-hover': 'var(--color-accent-primary-hover)',
+                secondary: 'var(--color-accent-secondary)',
+              },
+              border: {
+                DEFAULT: 'var(--color-border)',
+                strong: 'var(--color-border-strong)',
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""
+     onerror="console.error('Failed to load Leaflet library')"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Import Maps -->
+
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="h-screen w-screen overflow-hidden bg-[--color-bg-secondary] text-[--color-text-primary]">
+    <div id="root"></div>
+    <div id="toast-root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
