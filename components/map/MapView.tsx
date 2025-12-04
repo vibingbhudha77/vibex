@@ -197,7 +197,7 @@ const MapView = forwardRef<MapViewRef, MapViewProps>((props, ref) => {
 
                 const popupNode = document.createElement('div');
                 popupNode.className = "font-sans";
-                popupNode.style.cssText = "background: rgba(17, 25, 40, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.18); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); padding: 20px; min-width: 280px;";
+                popupNode.style.cssText = "padding: 20px;";
 
                 const popupNow = new Date();
                 const popupNowTime = popupNow.getTime();

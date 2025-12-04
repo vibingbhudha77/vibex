@@ -294,15 +294,42 @@ body {
   animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Dark Mode Overrides for Leaflet Popups */
-.dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip {
-  background: var(--color-bg-tertiary);
-  color: var(--color-text-primary);
-  box-shadow: 0 3px 14px rgba(0,0,0,0.4);
-  border-radius: 8px;
+/* Glassmorphism Leaflet Popups */
+.leaflet-popup-content-wrapper {
+  background: rgba(17, 25, 40, 0.85) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37) !important;
+  padding: 0 !important;
 }
-.dark .leaflet-popup-content p, 
-.dark .leaflet-popup-content h3 {
-    color: var(--color-text-primary) !important;
+
+.leaflet-popup-tip {
+  background: rgba(17, 25, 40, 0.85) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: none !important;
 }
-.dark .leaflet-popup-content .participant-avatars .avatar-circle { border-color: var(--color-bg-tertiary); }
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  min-width: 280px !important;
+}
+
+.dark .leaflet-popup-content-wrapper, 
+.dark .leaflet-popup-tip {
+  background: rgba(17, 25, 40, 0.85) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.leaflet-popup-close-button {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 24px !important;
+  padding: 8px 12px !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: rgba(255, 255, 255, 1) !important;
+}
