@@ -23,7 +23,7 @@ const enrichNotification = async (notifPayload: any): Promise<Notification> => {
         const { data } = await supabase.from('tags').select('id, name').eq('id', notifPayload.tag_id).single();
         tag = data;
     }
-    
+
     return {
         id: notifPayload.id,
         type: notifPayload.type,
@@ -42,15 +42,15 @@ const enrichNotification = async (notifPayload: any): Promise<Notification> => {
  * @returns The Supabase channel for unsubscribing.
  */
 export const subscribeToSessions = (callback: (payload: RealtimePostgresChangesPayload<Session>) => void): RealtimeChannel => {
-  const channel = supabase
-    .channel('sessions')
-    .on('postgres_changes', 
-      { event: '*', schema: 'public', table: 'sessions' },
-      callback
-    )
-    .subscribe();
-  
-  return channel;
+    const channel = supabase
+        .channel('sessions')
+        .on('postgres_changes',
+            { event: '*', schema: 'public', table: 'sessions' },
+            callback
+        )
+        .subscribe();
+
+    return channel;
 };
 
 /**
@@ -60,21 +60,21 @@ export const subscribeToSessions = (callback: (payload: RealtimePostgresChangesP
  * @returns The Supabase channel for unsubscribing.
  */
 export const subscribeToSessionMessages = (sessionId: number, callback: (payload: RealtimePostgresChangesPayload<SessionMessage>) => void): RealtimeChannel => {
-  const channel = supabase
-    .channel(`session_messages_${sessionId}`)
-    .on('postgres_changes', 
-      { event: 'INSERT', schema: 'public', table: 'session_messages', filter: `session_id=eq.${sessionId}` },
-      async (payload) => {
-          // Fetch the sender's profile for the new message
-          const { data, error } = await supabase.from('profiles').select('username').eq('id', payload.new.sender_id).single();
-          if (!error && data) {
-              (payload.new as SessionMessage).sender = data;
-          }
-          callback(payload as RealtimePostgresChangesPayload<SessionMessage>);
-      })
-    .subscribe();
-  
-  return channel;
+    const channel = supabase
+        .channel(`session_messages_${sessionId}`)
+        .on('postgres_changes',
+            { event: 'INSERT', schema: 'public', table: 'session_messages', filter: `session_id=eq.${sessionId}` },
+            async (payload) => {
+                // Fetch the sender's profile for the new message
+                const { data, error } = await supabase.from('profiles').select('username').eq('id', payload.new.sender_id).single();
+                if (!error && data) {
+                    (payload.new as SessionMessage).sender = data;
+                }
+                callback(payload as RealtimePostgresChangesPayload<SessionMessage>);
+            })
+        .subscribe();
+
+    return channel;
 };
 
 /**
@@ -86,12 +86,34 @@ export const subscribeToSessionMessages = (sessionId: number, callback: (payload
 export const subscribeToNotifications = (userId: string, callback: (notification: Notification) => void): RealtimeChannel => {
     const channel = supabase
         .channel(`notifications_${userId}`)
-        .on('postgres_changes', 
+        .on('postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'notifications', filter: `recipient_id=eq.${userId}` },
             async (payload) => {
                 const enriched = await enrichNotification(payload.new);
                 callback(enriched);
             }
+        )
+        .subscribe();
+    return channel;
+};
+
+/**
+ * Subscribes to friend request changes for a specific user.
+ * @param userId - The ID of the user.
+ * @param callback - Function to run when a friend request change occurs.
+ * @returns The Supabase channel for unsubscribing.
+ */
+export const subscribeToFriendRequests = (userId: string, callback: (payload: RealtimePostgresChangesPayload<any>) => void): RealtimeChannel => {
+    const channel = supabase
+        .channel(`friend_requests_${userId}`)
+        .on('postgres_changes',
+            {
+                event: '*',
+                schema: 'public',
+                table: 'friend_requests',
+                filter: `to_user_id=eq.${userId}`
+            },
+            callback
         )
         .subscribe();
     return channel;
@@ -106,7 +128,7 @@ export const subscribeToNotifications = (userId: string, callback: (notification
 export const subscribeToDirectMessages = (conversationId: string, callback: (message: DirectMessage) => void): RealtimeChannel => {
     const channel = supabase
         .channel(`direct_messages_${conversationId}`)
-        .on('postgres_changes', 
+        .on('postgres_changes',
             { event: 'INSERT', schema: 'public', table: 'direct_messages', filter: `conversation_id=eq.${conversationId}` },
             (payload) => {
                 const rawMessage = payload.new as any;
