@@ -50,17 +50,17 @@ export interface Session {
   lng: number;
   sessionType: SessionType;
   emoji: string; // The emoji used as the map marker
-  
+
   // Time & Status
   event_time: string; // ISO String for the event start time
   duration: number; // Duration in minutes
   status: 'active' | 'closed';
-  
+
   // User & Social
   creator_id: string;
   participants: string[]; // Array of user UUIDs
   creator: { username: string }; // Joined from profiles table
-  
+
   // Conditional Fields
   returnTime?: string; // ISO string (for 'borrow')
   flow?: 'seeking' | 'offering'; // (for 'seek' and 'cookie')
@@ -68,14 +68,14 @@ export interface Session {
   // Privacy fields for private vibes
   privacy: 'public' | 'private';
   visibleToTags?: string[]; // Array of tag IDs
-  
+
   // NEW: Fields for Seek & Cookie flows
   helpCategory?: 'Academic' | 'Project' | 'Tech' | 'General';
   skillTag?: string; // e.g., "Python"
   expectedOutcome?: string;
   // UPDATED: 'giver' role added for Borrow system
   participantRoles?: { [userId: string]: 'seeking' | 'offering' | 'giver' };
-  
+
   // NEW: Field for Borrow system
   urgency?: 'Low' | 'Medium' | 'High';
 }

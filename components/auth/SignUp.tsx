@@ -28,6 +28,13 @@ const SignUp: React.FC<SignUpProps> = ({ switchToLogin }) => {
       setLoading(false);
       return;
     }
+
+    if (!email.endsWith('@iitgn.ac.in')) {
+      setError('Only iitgn.ac.in emails are allowed.');
+      setLoading(false);
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       setLoading(false);
@@ -50,11 +57,11 @@ const SignUp: React.FC<SignUpProps> = ({ switchToLogin }) => {
     if (error) {
       setError(error.message);
     } else if (data.user) {
-        if(data.user.identities?.length === 0){
-             setError('This username or email is already taken. Please try another one.');
-        } else {
-             setSuccessMessage('Success! Please check your email to confirm your account.');
-        }
+      if (data.user.identities?.length === 0) {
+        setError('This username or email is already taken. Please try another one.');
+      } else {
+        setSuccessMessage('Success! Please check your email to confirm your account.');
+      }
     }
     setLoading(false);
   };

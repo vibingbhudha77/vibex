@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Logo from '../common/Logo';
 import { supabase } from '../../lib/supabaseClient';
+import ForgotPasswordModal from './ForgotPasswordModal';
 
 interface LoginProps {
   switchToSignUp: () => void;
@@ -13,6 +14,7 @@ const Login: React.FC<LoginProps> = ({ switchToSignUp }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isForgotPasswordOpen, setIsForgotPasswordOpen] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +27,12 @@ const Login: React.FC<LoginProps> = ({ switchToSignUp }) => {
       return;
     }
 
+    if (!email.endsWith('@iitgn.ac.in')) {
+      setError('Only iitgn.ac.in emails are allowed.');
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -32,7 +40,7 @@ const Login: React.FC<LoginProps> = ({ switchToSignUp }) => {
 
     if (error) {
       setError(error.message);
-    } 
+    }
     // On success, the onAuthStateChange listener in App.tsx will handle the redirect.
     setLoading(false);
   };
@@ -59,7 +67,16 @@ const Login: React.FC<LoginProps> = ({ switchToSignUp }) => {
             />
           </div>
           <div>
-            <label htmlFor="password" className="text-sm font-medium text-[--color-text-secondary]">Password</label>
+            <div className="flex justify-between items-center">
+              <label htmlFor="password" className="text-sm font-medium text-[--color-text-secondary]">Password</label>
+              <button
+                type="button"
+                onClick={() => setIsForgotPasswordOpen(true)}
+                className="text-xs font-medium text-[--color-accent-primary] hover:text-[--color-accent-primary-hover]"
+              >
+                Forgot Password?
+              </button>
+            </div>
             <input
               id="password"
               name="password"
@@ -87,6 +104,11 @@ const Login: React.FC<LoginProps> = ({ switchToSignUp }) => {
           </button>
         </p>
       </div>
+
+      <ForgotPasswordModal
+        isOpen={isForgotPasswordOpen}
+        onClose={() => setIsForgotPasswordOpen(false)}
+      />
     </div>
   );
 };
