@@ -17,7 +17,6 @@ CREATE EXTENSION IF NOT EXISTS "postgis"; -- For geospatial queries
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   username TEXT UNIQUE NOT NULL,
-  email TEXT, -- Added email column
   bio TEXT DEFAULT '',
   branch TEXT DEFAULT 'Not set',
   year INTEGER DEFAULT 2025,
@@ -551,26 +550,6 @@ CREATE TRIGGER update_conversations_updated_at BEFORE UPDATE ON conversations
 
 CREATE TRIGGER update_walk_with_me_updated_at BEFORE UPDATE ON walk_with_me_sessions
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- Function to handle new user creation (Auth -> Profiles)
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.profiles (id, username, bio, privacy)
-  VALUES (
-    NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'username', 'user_' || substr(NEW.id::text, 1, 8)),
-    COALESCE(NEW.raw_user_meta_data->>'bio', ''),
-    COALESCE(NEW.raw_user_meta_data->>'privacy', 'public')
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Trigger for new user creation
-CREATE TRIGGER on_auth_user_created
-  AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- Function to auto-accept friend request and create friendship
 CREATE OR REPLACE FUNCTION accept_friend_request()
