@@ -242,7 +242,7 @@ export const updateSession = async (
   updates: Partial<any>
 ): Promise<ServiceResponse<Session[]>> => {
   const dbUpdates: any = {};
-  
+
   if (updates.participants !== undefined) dbUpdates.participants = updates.participants;
   if (updates.participantRoles !== undefined) dbUpdates.participant_roles = updates.participantRoles;
   if (updates.duration !== undefined) dbUpdates.duration = updates.duration;
@@ -299,7 +299,7 @@ export const joinSession = async (
     }
 
     const rpcResponse = data as RpcResponse;
-    
+
     if (!rpcResponse.success) {
       return {
         data: null,
@@ -339,7 +339,7 @@ export const leaveSession = async (
     }
 
     const rpcResponse = data as RpcResponse;
-    
+
     if (!rpcResponse.success) {
       return {
         data: null,
@@ -382,7 +382,7 @@ export const createVouch = async (
     }
 
     const rpcResponse = data as RpcResponse;
-    
+
     if (!rpcResponse.success) {
       return {
         data: null,
@@ -553,7 +553,7 @@ export const acceptFriendRequest = async (
     }
 
     const rpcResponse = data as RpcResponse;
-    
+
     if (!rpcResponse.success) {
       return {
         data: null,
@@ -755,7 +755,7 @@ export const updateUserProfile = async (
   profileData: Partial<Profile>
 ): Promise<ServiceResponse<Profile[]>> => {
   const dbData: any = {};
-  
+
   if (profileData.bio !== undefined) dbData.bio = profileData.bio;
   if (profileData.branch !== undefined) dbData.branch = profileData.branch;
   if (profileData.year !== undefined) dbData.year = profileData.year;
@@ -821,7 +821,7 @@ export const fetchProfilesByIds = async (userIds: string[]): Promise<ServiceResp
 // ============================================
 
 /**
- * Fetch user's session history (closed sessions)
+ * Fetch user's session history (all sessions they created or joined)
  */
 export const fetchUserSessionHistory = async (userId: string): Promise<ServiceResponse<Session[]>> => {
   const { data, error } = await supabase
@@ -831,7 +831,6 @@ export const fetchUserSessionHistory = async (userId: string): Promise<ServiceRe
       creator:profiles!creator_id(username)
     `)
     .or(`creator_id.eq.${userId},participants.cs.{${userId}}`)
-    .eq('status', 'closed')
     .order('event_time', { ascending: false })
     .limit(50);
 
@@ -844,6 +843,31 @@ export const fetchUserSessionHistory = async (userId: string): Promise<ServiceRe
     data: data ? data.map(mapSessionFromDB) : [],
     error: null,
   };
+};
+
+/**
+ * Transfer session ownership to another participant
+ */
+export const transferSessionOwnership = async (
+  sessionId: number,
+  newOwnerId: string
+): Promise<ServiceResponse<boolean>> => {
+  try {
+    const { error } = await supabase
+      .from('sessions')
+      .update({ creator_id: newOwnerId })
+      .eq('id', sessionId);
+
+    if (error) {
+      console.error('Error transferring session ownership:', error);
+      return { data: null, error: new Error(error.message) };
+    }
+
+    return { data: true, error: null };
+  } catch (e: any) {
+    console.error('Unexpected error in transferSessionOwnership:', e);
+    return { data: null, error: new Error(e.message || 'Unexpected error') };
+  }
 };
 
 /**
