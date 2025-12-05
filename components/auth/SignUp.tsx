@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Logo from '../common/Logo';
 import { supabase } from '../../lib/supabaseClient';
+import VerifyOtpModal from './VerifyOtpModal';
 
 interface SignUpProps {
   switchToLogin: () => void;
@@ -15,12 +16,11 @@ const SignUp: React.FC<SignUpProps> = ({ switchToLogin }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
+  const [showOtpModal, setShowOtpModal] = useState(false);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setSuccessMessage('');
     setLoading(true);
 
     if (!username || !email || !password || !confirmPassword) {
@@ -45,7 +45,6 @@ const SignUp: React.FC<SignUpProps> = ({ switchToLogin }) => {
       email,
       password,
       options: {
-        // This data will be available in the trigger to create the user's profile
         data: {
           username: username,
           bio: '',
@@ -56,14 +55,17 @@ const SignUp: React.FC<SignUpProps> = ({ switchToLogin }) => {
 
     if (error) {
       setError(error.message);
+      setLoading(false);
     } else if (data.user) {
       if (data.user.identities?.length === 0) {
         setError('This username or email is already taken. Please try another one.');
+        setLoading(false);
       } else {
-        setSuccessMessage('Success! Please check your email to confirm your account.');
+        // Success! Show OTP modal
+        setShowOtpModal(true);
+        setLoading(false);
       }
     }
-    setLoading(false);
   };
 
   return (
@@ -73,7 +75,6 @@ const SignUp: React.FC<SignUpProps> = ({ switchToLogin }) => {
         <p className="text-center text-[--color-text-secondary]">Create an account to start storing your vibes.</p>
         <form className="space-y-6" onSubmit={handleSignUp}>
           {error && <p className="text-[--color-error] text-sm text-center">{error}</p>}
-          {successMessage && <p className="text-green-600 dark:text-green-400 text-sm text-center">{successMessage}</p>}
           <div>
             <label htmlFor="username-signup" className="text-sm font-medium text-[--color-text-secondary]">Username</label>
             <input
@@ -132,7 +133,7 @@ const SignUp: React.FC<SignUpProps> = ({ switchToLogin }) => {
           </div>
           <button
             type="submit"
-            disabled={loading || !!successMessage}
+            disabled={loading}
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-[--color-text-on-accent] bg-[--color-accent-primary] hover:bg-green-700 dark:hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[--color-accent-primary] transition-colors duration-200 disabled:bg-gray-400 dark:disabled:bg-gray-600"
           >
             {loading ? 'Signing up...' : 'Sign Up'}
@@ -145,6 +146,16 @@ const SignUp: React.FC<SignUpProps> = ({ switchToLogin }) => {
           </button>
         </p>
       </div>
+
+      <VerifyOtpModal
+        isOpen={showOtpModal}
+        email={email}
+        onSuccess={() => {
+          // Auth state change will handle redirect
+          setShowOtpModal(false);
+        }}
+        onClose={() => setShowOtpModal(false)}
+      />
     </div>
   );
 };
