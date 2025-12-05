@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { User, Profile, Session, Vouch } from '../../types';
 import CookieScoreDashboard from './CookieScoreDashboard';
 import SessionHistory from './SessionHistory';
+import AboutUsModal from './AboutUsModal';
 import * as supabaseService from '../../lib/supabaseService';
 
 // Data for selectors
@@ -65,8 +66,8 @@ const SelectionTile: React.FC<{ label: string; isSelected: boolean; onToggle: ()
             onClick={onToggle}
             disabled={disabled}
             className={`px-3 py-1.5 text-sm font-semibold rounded-full border-2 transition-all duration-200 ease-in-out ${isSelected
-                    ? 'bg-[--color-accent-primary] text-[--color-text-on-accent] border-[--color-accent-primary] shadow-sm'
-                    : 'bg-[--color-bg-primary] text-[--color-text-primary] border-[--color-border] hover:border-[--color-accent-primary]'
+                ? 'bg-[--color-accent-primary] text-[--color-text-on-accent] border-[--color-accent-primary] shadow-sm'
+                : 'bg-[--color-bg-primary] text-[--color-text-primary] border-[--color-border] hover:border-[--color-accent-primary]'
                 } ${disabled && !isSelected ? 'opacity-40 cursor-not-allowed' : ''}`}
         >
             {label}
@@ -79,6 +80,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onProfileUpdate, theme,
     const [isSaving, setIsSaving] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [openSection, setOpenSection] = useState<string | null>('settings');
+    const [showAboutUs, setShowAboutUs] = useState(false);
 
     // FIX: Separated useEffect hooks to prevent race conditions when updating the profile.
 
@@ -191,8 +193,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onProfileUpdate, theme,
                                     key={mode}
                                     onClick={() => setTheme(mode)}
                                     className={`w-1/3 py-2 text-sm font-semibold rounded-md transition-colors ${theme === mode
-                                            ? 'bg-[--color-bg-primary] text-[--color-text-primary] shadow-sm'
-                                            : 'bg-transparent text-[--color-text-secondary] hover:text-[--color-text-primary]'
+                                        ? 'bg-[--color-bg-primary] text-[--color-text-primary] shadow-sm'
+                                        : 'bg-transparent text-[--color-text-secondary] hover:text-[--color-text-primary]'
                                         }`}
                                 >
                                     <span className="capitalize">{mode}</span>
@@ -285,8 +287,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onProfileUpdate, theme,
                 </AccordionSection>
             </div>
 
-            {/* Save Button */}
-            <div className="fixed bottom-16 left-0 right-0 p-4 bg-[--color-bg-primary]/80 backdrop-blur-sm border-t border-[--color-border]">
+            {/* About Us and Save Buttons */}
+            <div className="fixed bottom-16 left-0 right-0 p-4 bg-[--color-bg-primary]/80 backdrop-blur-sm border-t border-[--color-border] space-y-2">
+                <button
+                    onClick={() => setShowAboutUs(true)}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-lg shadow-md hover:from-purple-600 hover:to-purple-700 transition-all duration-300"
+                >
+                    ✨ About Us - Nexion
+                </button>
                 <button
                     onClick={handleSave}
                     disabled={isSaving || showSuccess}
@@ -303,6 +311,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user, onProfileUpdate, theme,
                     )}
                 </button>
             </div>
+
+            {/* About Us Modal */}
+            <AboutUsModal isOpen={showAboutUs} onClose={() => setShowAboutUs(false)} />
         </div>
     );
 };

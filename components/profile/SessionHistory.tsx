@@ -2,6 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import type { Session, User, SessionType } from '../../types';
 import SessionHistoryCard from './SessionHistoryCard';
 import * as supabaseService from '../../lib/supabaseService';
+import { supabase } from '../../lib/supabaseClient';
+
 
 interface SessionHistoryProps {
   user: User;
@@ -18,13 +20,13 @@ const sessionTypeIcons: Record<SessionType, string> = {
 };
 
 const SkeletonCard: React.FC = () => (
-    <div className="bg-[--color-bg-primary] rounded-lg shadow-sm p-3 flex items-center gap-3 animate-pulse">
-        <div className="w-10 h-10 bg-[--color-bg-tertiary] rounded-md"></div>
-        <div className="flex-grow space-y-2">
-            <div className="h-4 bg-[--color-bg-tertiary] rounded w-3/4"></div>
-            <div className="h-3 bg-[--color-bg-tertiary] rounded w-1/2"></div>
-        </div>
+  <div className="bg-[--color-bg-primary] rounded-lg shadow-sm p-3 flex items-center gap-3 animate-pulse">
+    <div className="w-10 h-10 bg-[--color-bg-tertiary] rounded-md"></div>
+    <div className="flex-grow space-y-2">
+      <div className="h-4 bg-[--color-bg-tertiary] rounded w-3/4"></div>
+      <div className="h-3 bg-[--color-bg-tertiary] rounded w-1/2"></div>
     </div>
+  </div>
 );
 
 const SessionHistory: React.FC<SessionHistoryProps> = ({ user }) => {
@@ -35,22 +37,38 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ user }) => {
 
   useEffect(() => {
     const loadHistory = async () => {
-        setIsLoading(true);
-        const { data } = await supabaseService.fetchUserSessionHistory(user.id);
-        setUserHistory(data || []);
-        setIsLoading(false);
+      setIsLoading(true);
+      const { data } = await supabaseService.fetchUserSessionHistory(user.id);
+      setUserHistory(data || []);
+      setIsLoading(false);
     };
     loadHistory();
+
+    // Real-time subscription for session updates
+    const channel = supabase
+      .channel('session_history_updates')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'sessions' },
+        () => {
+          // Reload history when any session changes
+          loadHistory();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
   }, [user.id]);
 
   const stats = useMemo(() => {
     const created = userHistory.filter(s => s.creator_id === user.id);
     const joined = userHistory.filter(s => s.creator_id !== user.id);
     const cookiesGiven = created.filter(s => s.sessionType === 'cookie');
-    
+
     const totalDuration = userHistory.reduce((acc, s) => acc + s.duration, 0);
     const avgDuration = userHistory.length > 0 ? Math.round(totalDuration / userHistory.length) : 0;
-    
+
     const typeCounts = userHistory.reduce((acc, s) => {
       acc[s.sessionType] = (acc[s.sessionType] || 0) + 1;
       return acc;
@@ -81,7 +99,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ user }) => {
     } else if (dateFilter === 'Last Month') {
       dateFiltered = userHistory.filter(s => new Date(s.event_time) >= monthAgo);
     }
-    
+
     switch (typeFilter) {
       case 'Created':
         return dateFiltered.filter(s => s.creator_id === user.id);
@@ -94,14 +112,14 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ user }) => {
         return dateFiltered;
     }
   }, [userHistory, typeFilter, dateFilter, user.id]);
-  
+
   useEffect(() => {
-      setIsLoading(true);
-      const timer = setTimeout(() => {
-          // This simulates the filtering being applied
-          setIsLoading(false);
-      }, 300);
-      return () => clearTimeout(timer);
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      // This simulates the filtering being applied
+      setIsLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
   }, [typeFilter, dateFilter]);
 
 
@@ -136,7 +154,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ user }) => {
           ))}
         </div>
         <div className="flex flex-wrap gap-2">
-           {(['Last Week', 'Last Month', 'All Time'] as DateFilter[]).map(f => (
+          {(['Last Week', 'Last Month', 'All Time'] as DateFilter[]).map(f => (
             <button key={f} onClick={() => setDateFilter(f)} className={`px-3 py-1 text-xs font-semibold rounded-full transition-colors ${dateFilter === f ? 'bg-[--color-accent-secondary] text-[--color-text-on-accent]' : 'bg-[--color-bg-tertiary] text-[--color-text-primary] hover:bg-[--color-border]'}`}>
               {f}
             </button>
@@ -147,7 +165,7 @@ const SessionHistory: React.FC<SessionHistoryProps> = ({ user }) => {
       {/* History List */}
       <div className="space-y-3 pt-2">
         {isLoading ? (
-            Array.from({length: 3}).map((_, i) => <SkeletonCard key={i} />)
+          Array.from({ length: 3 }).map((_, i) => <SkeletonCard key={i} />)
         ) : filteredHistory.length > 0 ? (
           filteredHistory.map(session => <SessionHistoryCard key={session.id} session={session} />)
         ) : (
